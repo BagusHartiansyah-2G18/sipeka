@@ -62,7 +62,7 @@ export function Sidebar() {
     !item.roles || item.roles.includes(userRole)
   );
 
-  const groups = [...new Set(filteredNavItems.map((n) => n.group))];
+  const groups = Array.from(new Set(filteredNavItems.map((n) => n.group)));
 
   const initials = (user?.nama ?? "?")
     .split(" ")
