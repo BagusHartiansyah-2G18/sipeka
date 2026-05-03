@@ -1,0 +1,173 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  KEPALA_BADAN
+  SEKRETARIS_BADAN
+  KABAG_UMUM_KEPEGAWAIAN
+  KEPALA_BIDANG
+  PEGAWAI
+}
+
+enum Bidang {
+  SEKRETARIAT
+  IDEOLOGI_WAWASAN_KARAKTER
+  POLITIK_ORMAS
+  KEWASPADAAN_NASIONAL
+}
+
+enum StatusPengajuan {
+  DRAFT
+  MENUNGGU
+  DIPROSES
+  DISETUJUI
+  DITOLAK
+}
+
+enum JenisCuti {
+  TAHUNAN
+  SAKIT
+  MELAHIRKAN
+  BESAR
+  ALASAN_PENTING
+  LUAR_TANGGUNGAN_NEGARA
+}
+
+enum JenisKenaikanPangkat {
+  REGULER
+  PILIHAN
+  ANUMERTA
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  role      Role     @default(PEGAWAI)
+  pegawaiId String?  @unique
+  pegawai   Pegawai? @relation(fields: [pegawaiId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Pegawai {
+  id              String    @id @default(cuid())
+  nip             String    @unique
+  nama            String
+  tempatLahir     String?
+  tanggalLahir    DateTime?
+  jenisKelamin    String?
+  agama           String?
+  alamat          String?
+  noTelp          String?
+  jabatan         String
+  bidang          Bidang
+  pangkat         String?
+  golonganRuang   String
+  tmtGolongan     DateTime?
+  unitKerja       String?   @default("Badan Kesatuan Bangsa dan Politik")
+  dinas           String?   @default("Kabupaten Sumbawa Barat")
+  masaKerja       String?
+  tglMasaKerja    DateTime?
+  gajiPokok       Int?
+  tmtPangkat      DateTime?
+  pendidikanAkhir String?
+  statusPegawai   String    @default("AKTIF")
+  fotoUrl         String?
+  user            User?
+  cuti            Cuti[]
+  kgb             KenaikanGajiBerkala[]
+  pangkatRel      KenaikanPangkat[]
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model Cuti {
+  id              String         @id @default(cuid())
+  pegawaiId       String
+  pegawai         Pegawai        @relation(fields: [pegawaiId], references: [id])
+  jenisCuti       JenisCuti
+  tanggalMulai    DateTime
+  tanggalSelesai  DateTime
+  jumlahHari      Int
+  durasiJenis     String         @default("HARI") // HARI, BULAN, TAHUN
+  alasan          String         @db.Text
+  alamatSelama    String?        @db.Text
+  sisaCuti        Int?
+  status          StatusPengajuan @default(DRAFT)
+  
+  // Atasan Details
+  atasan1Jabatan  String?
+  atasan1Nama     String?
+  atasan1Nip      String?
+  atasan2Jabatan  String?
+  atasan2Nama     String?
+  atasan2Nip      String?
+  
+  // File Pendukung
+  filePendukungUrl String?
+
+  // Tanda tangan (nama jabatan & status)
+  ttdKabirBidang  String?
+  ttdKabirStatus  Boolean        @default(false)
+  ttdSekretaris   String?
+  ttdSekretarisStatus Boolean    @default(false)
+  ttdKepalaBadan  String?
+  ttdKepalaBadanStatus Boolean   @default(false)
+  ttdSekda        String?
+  ttdSekdaStatus  Boolean        @default(false)
+  nomorSurat      String?
+  catatanAdmin    String?        @db.Text
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model KenaikanGajiBerkala {
+  id              String         @id @default(cuid())
+  pegawaiId       String
+  pegawai         Pegawai        @relation(fields: [pegawaiId], references: [id])
+  gajiPokokSekarang Int
+  tmtGajiSekarang DateTime
+  golonganSekarang  String
+  tmtKGBDiusulkan DateTime
+  status          StatusPengajuan @default(DRAFT)
+  nomorSurat      String?
+  // Dokumen (url file)
+  docSkPangkat    String?
+  docSkKGB        String?
+  docSKP          String?
+  docHukdis       String?
+  docDRH          String?
+  catatanAdmin    String?        @db.Text
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model KenaikanPangkat {
+  id                  String              @id @default(cuid())
+  pegawaiId           String
+  pegawai             Pegawai             @relation(fields: [pegawaiId], references: [id])
+  jabatanSekarang     String
+  golonganSekarang    String
+  tmtPangkatSekarang  DateTime
+  usulPangkatKe       String
+  jenisKenaikanPangkat JenisKenaikanPangkat
+  status              StatusPengajuan     @default(DRAFT)
+  nomorSurat          String?
+  // Dokumen
+  docIjazah           String?
+  docSKP              String?
+  docSkPengangkatan   String?
+  docSkPangkat        String?
+  docDiklat           String?
+  catatanAdmin        String?             @db.Text
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+}
