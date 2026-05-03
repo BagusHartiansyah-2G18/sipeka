@@ -24,6 +24,8 @@ export function CutiList({ data: initialData, isAdmin }: CutiListProps) {
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState("");
+  const [pendingStatus, setPendingStatus] = useState<string | null>(null);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -43,17 +45,20 @@ export function CutiList({ data: initialData, isAdmin }: CutiListProps) {
     }
   };
 
-  const handleUpdateStatus = (id: number, newStatus: string) => {
+  const handleUpdateStatus = (id: number, newStatus: string, reason?: string) => {
     setData(prev => prev.map(item => 
-      item.id === id ? { ...item, status: newStatus } : item
+      item.id === id ? { ...item, status: newStatus, alasanPenolakan: reason } : item
     ));
     setShowStatusModal(false);
+    setPendingStatus(null);
+    setRejectionReason("");
     alert(`Status pengajuan berhasil diubah menjadi: ${newStatus}`);
   };
 
   return (
     <>
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+        {/* ... table remains same ... */}
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
@@ -177,6 +182,7 @@ export function CutiList({ data: initialData, isAdmin }: CutiListProps) {
                 <div>
                   <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">Status</p>
                   <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold border mt-1 ${getStatusColor(selectedItem.status)}`}>
+                    {getStatusIcon(selectedItem.status)}
                     {selectedItem.status}
                   </span>
                 </div>
@@ -185,8 +191,20 @@ export function CutiList({ data: initialData, isAdmin }: CutiListProps) {
                 <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">Periode Cuti</p>
                 <p className="text-sm text-gray-900 font-medium">{selectedItem.tanggalMulai} s/d {selectedItem.tanggalSelesai} ({selectedItem.jumlahHari} hari)</p>
               </div>
+              
+              {/* Alasan Penolakan Alert */}
+              {selectedItem.status === "Ditolak" && selectedItem.alasanPenolakan && (
+                <div className="p-4 bg-red-50 border border-red-100 rounded-xl flex gap-3 items-start animate-fadeIn">
+                  <AlertCircle size={20} className="text-red-500 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-bold text-red-900">Alasan Penolakan:</p>
+                    <p className="text-sm text-red-700 mt-1 italic">"{selectedItem.alasanPenolakan}"</p>
+                  </div>
+                </div>
+              )}
+
               <div>
-                <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">Alasan</p>
+                <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">Alasan Pengajuan</p>
                 <p className="text-sm text-gray-900 bg-gray-50 p-3 rounded-lg border border-gray-100 mt-1 italic">"Ingin menghadiri acara keluarga di luar kota"</p>
               </div>
             </div>
@@ -208,57 +226,94 @@ export function CutiList({ data: initialData, isAdmin }: CutiListProps) {
                 <Shield size={18} />
                 Ubah Status Pengajuan
               </h3>
-              <button onClick={() => setShowStatusModal(false)} className="p-2 hover:bg-amber-100 rounded-full transition-colors text-amber-700">
+              <button 
+                onClick={() => { setShowStatusModal(false); setPendingStatus(null); setRejectionReason(""); }} 
+                className="p-2 hover:bg-amber-100 rounded-full transition-colors text-amber-700"
+              >
                 <X size={20} />
               </button>
             </div>
             <div className="p-6">
-              <p className="text-sm text-gray-600 mb-4">
-                Pilih status terbaru untuk pengajuan <strong>{selectedItem.jenisCuti}</strong> oleh <strong>{selectedItem.pegawai}</strong>.
-              </p>
-              <div className="space-y-2">
-                <button 
-                  onClick={() => handleUpdateStatus(selectedItem.id, "Disetujui")}
-                  className="w-full flex items-center justify-between p-4 bg-green-50 hover:bg-green-100 border border-green-100 rounded-xl transition-all group"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-green-500 text-white rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <Check size={20} />
-                    </div>
-                    <span className="font-bold text-green-700">Setujui</span>
+              {!pendingStatus ? (
+                <>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Pilih status terbaru untuk pengajuan <strong>{selectedItem.jenisCuti}</strong> oleh <strong>{selectedItem.pegawai}</strong>.
+                  </p>
+                  <div className="space-y-2">
+                    <button 
+                      onClick={() => handleUpdateStatus(selectedItem.id, "Disetujui")}
+                      className="w-full flex items-center justify-between p-4 bg-green-50 hover:bg-green-100 border border-green-100 rounded-xl transition-all group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-green-500 text-white rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <Check size={20} />
+                        </div>
+                        <span className="font-bold text-green-700">Setujui</span>
+                      </div>
+                      <ChevronRight size={18} className="text-green-300" />
+                    </button>
+                    <button 
+                      onClick={() => setPendingStatus("Ditolak")}
+                      className="w-full flex items-center justify-between p-4 bg-red-50 hover:bg-red-100 border border-red-100 rounded-xl transition-all group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-red-500 text-white rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <X size={20} />
+                        </div>
+                        <span className="font-bold text-red-700">Tolak</span>
+                      </div>
+                      <ChevronRight size={18} className="text-red-300" />
+                    </button>
+                    <button 
+                      onClick={() => handleUpdateStatus(selectedItem.id, "Menunggu")}
+                      className="w-full flex items-center justify-between p-4 bg-yellow-50 hover:bg-yellow-100 border border-yellow-100 rounded-xl transition-all group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-yellow-500 text-white rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <Clock size={20} />
+                        </div>
+                        <span className="font-bold text-yellow-700">Menunggu</span>
+                      </div>
+                      <ChevronRight size={18} className="text-yellow-300" />
+                    </button>
                   </div>
-                  <ChevronRight size={18} className="text-green-300" />
-                </button>
-                <button 
-                  onClick={() => handleUpdateStatus(selectedItem.id, "Ditolak")}
-                  className="w-full flex items-center justify-between p-4 bg-red-50 hover:bg-red-100 border border-red-100 rounded-xl transition-all group"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-red-500 text-white rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <X size={20} />
-                    </div>
-                    <span className="font-bold text-red-700">Tolak</span>
+                </>
+              ) : (
+                <div className="animate-fadeIn">
+                  <p className="text-sm font-bold text-gray-900 mb-2">Alasan Penolakan</p>
+                  <p className="text-xs text-gray-500 mb-3">Berikan keterangan kenapa pengajuan ini ditolak agar pegawai dapat memperbaikinya.</p>
+                  <textarea 
+                    autoFocus
+                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all resize-none"
+                    rows={4}
+                    placeholder="Contoh: Dokumen pendukung kurang lengkap / Tanggal bentrok dengan kegiatan dinas..."
+                    value={rejectionReason}
+                    onChange={(e) => setRejectionReason(e.target.value)}
+                  />
+                  <div className="flex gap-2 mt-4">
+                    <button 
+                      onClick={() => setPendingStatus(null)}
+                      className="flex-1 px-4 py-2 text-sm font-bold text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
+                      Kembali
+                    </button>
+                    <button 
+                      onClick={() => handleUpdateStatus(selectedItem.id, "Ditolak", rejectionReason)}
+                      disabled={!rejectionReason.trim()}
+                      className="flex-1 px-4 py-2 text-sm font-bold bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+                    >
+                      Konfirmasi Tolak
+                    </button>
                   </div>
-                  <ChevronRight size={18} className="text-red-300" />
-                </button>
-                <button 
-                  onClick={() => handleUpdateStatus(selectedItem.id, "Menunggu")}
-                  className="w-full flex items-center justify-between p-4 bg-yellow-50 hover:bg-yellow-100 border border-yellow-100 rounded-xl transition-all group"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-yellow-500 text-white rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <Clock size={20} />
-                    </div>
-                    <span className="font-bold text-yellow-700">Menunggu</span>
-                  </div>
-                  <ChevronRight size={18} className="text-yellow-300" />
-                </button>
-              </div>
+                </div>
+              )}
             </div>
             <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 text-center">
-              <button onClick={() => setShowStatusModal(false)} className="text-sm font-medium text-gray-500 hover:text-gray-700">
-                Batal
-              </button>
+              {!pendingStatus && (
+                <button onClick={() => setShowStatusModal(false)} className="text-sm font-medium text-gray-500 hover:text-gray-700">
+                  Batal
+                </button>
+              )}
             </div>
           </div>
         </div>

@@ -19,6 +19,7 @@ import Link from "next/link";
 export default function BaruCutiPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
     jenisCuti: "",
     alasan: "",
@@ -39,17 +40,52 @@ export default function BaruCutiPage() {
     e.preventDefault();
     setLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      const data = new FormData();
+      // Append all text fields
+      Object.entries(formData).forEach(([key, value]) => {
+        data.append(key, value);
+      });
+      
+      // Append file
+      if (file) {
+        data.append("file", file);
+      }
+
+      const res = await fetch("/api/cuti", {
+        method: "POST",
+        body: data,
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Gagal mengirim pengajuan");
+      }
+
       alert("Pengajuan cuti berhasil dikirim!");
       router.push("/dashboard/cuti");
-    }, 1500);
+    } catch (error: any) {
+      alert(error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const selectedFile = e.target.files[0];
+      // Validate file size (5MB)
+      if (selectedFile.size > 5 * 1024 * 1024) {
+        alert("Ukuran file maksimal 5MB");
+        return;
+      }
+      setFile(selectedFile);
+    }
   };
 
   return (
@@ -323,12 +359,30 @@ export default function BaruCutiPage() {
               <h2 className="font-semibold text-gray-800">Dokumen Pendukung</h2>
             </div>
             <div className="p-6">
-              <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 flex flex-col items-center justify-center hover:border-blue-500 hover:bg-blue-50 transition-all cursor-pointer">
-                <Upload size={32} className="text-gray-400 mb-2" />
-                <p className="text-sm font-medium text-gray-900">Klik atau seret file ke sini</p>
-                <p className="text-xs text-gray-500 mt-1">PDF, JPG, atau PNG (Maks. 5MB)</p>
-                <input type="file" className="hidden" />
-              </div>
+              <label className="border-2 border-dashed border-gray-300 rounded-xl p-8 flex flex-col items-center justify-center hover:border-blue-500 hover:bg-blue-50 transition-all cursor-pointer">
+                <Upload size={32} className={`mb-2 ${file ? 'text-blue-500' : 'text-gray-400'}`} />
+                <p className="text-sm font-medium text-gray-900">
+                  {file ? file.name : "Klik atau seret file ke sini"}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {file ? `${(file.size / 1024).toFixed(1)} KB` : "PDF, JPG, atau PNG (Maks. 5MB)"}
+                </p>
+                <input 
+                  type="file" 
+                  className="hidden" 
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  onChange={handleFileChange}
+                />
+              </label>
+              {file && (
+                <button 
+                  type="button"
+                  onClick={() => setFile(null)}
+                  className="mt-2 text-xs text-red-500 hover:underline"
+                >
+                  Hapus file
+                </button>
+              )}
             </div>
           </div>
 

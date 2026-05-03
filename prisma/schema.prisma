@@ -124,6 +124,7 @@ model Cuti {
   ttdSekda        String?
   ttdSekdaStatus  Boolean        @default(false)
   nomorSurat      String?
+  alasanPenolakan String?        @db.Text
   catatanAdmin    String?        @db.Text
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
