@@ -1,6 +1,7 @@
 "use client";
 import { usePathname } from "next/navigation";
 import { ChevronRight, Bell, Settings } from "lucide-react";
+import { NotificationDropdown } from "./NotificationDropdown";
 
 const breadcrumbLabels: Record<string, string> = {
   dashboard: "Dashboard",
@@ -50,18 +51,12 @@ export function Header() {
 
         {/* Right Actions */}
         <div className="flex items-center gap-3">
-          <button
-            title="Pemberitahuan"
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors relative"
-          >
-            <Bell size={20} className="text-gray-600" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-          </button>
+          <NotificationDropdown />
           <button
             title="Pengaturan"
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
           >
-            <Settings size={20} className="text-gray-600" />
+            <Settings size={20} />
           </button>
         </div>
       </div>

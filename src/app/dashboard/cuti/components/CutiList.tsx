@@ -28,31 +28,42 @@ export function CutiList({ data: initialData, isAdmin }: CutiListProps) {
   const [pendingStatus, setPendingStatus] = useState<string | null>(null);
 
   const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "Menunggu": return <Clock size={16} />;
-      case "Disetujui": return <CheckCircle size={16} />;
-      case "Ditolak": return <XCircle size={16} />;
-      default: return null;
-    }
+    const s = status.toUpperCase();
+    if (s.includes("MENUNGGU")) return <Clock size={16} />;
+    if (s === "DISETUJUI") return <CheckCircle size={16} />;
+    if (s === "DITOLAK") return <XCircle size={16} />;
+    return <Clock size={16} />;
   };
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Menunggu": return "bg-yellow-100 text-yellow-700 border-yellow-200";
-      case "Disetujui": return "bg-green-100 text-green-700 border-green-200";
-      case "Ditolak": return "bg-red-100 text-red-700 border-red-200";
-      default: return "";
-    }
+    const s = status.toUpperCase();
+    if (s.includes("MENUNGGU")) return "bg-yellow-100 text-yellow-700 border-yellow-200";
+    if (s === "DISETUJUI") return "bg-green-100 text-green-700 border-green-200";
+    if (s === "DITOLAK") return "bg-red-100 text-red-700 border-red-200";
+    return "bg-gray-100 text-gray-700 border-gray-200";
   };
 
-  const handleUpdateStatus = (id: number, newStatus: string, reason?: string) => {
-    setData(prev => prev.map(item => 
-      item.id === id ? { ...item, status: newStatus, alasanPenolakan: reason } : item
-    ));
-    setShowStatusModal(false);
-    setPendingStatus(null);
-    setRejectionReason("");
-    alert(`Status pengajuan berhasil diubah menjadi: ${newStatus}`);
+  const handleUpdateStatus = async (id: string, newStatus: string, reason?: string) => {
+    // In real app, call API
+    try {
+      const res = await fetch(`/api/cuti/${id}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus.replace(/ /g, "_"), alasanPenolakan: reason }),
+      });
+
+      if (!res.ok) throw new Error("Gagal update status");
+
+      setData(prev => prev.map(item => 
+        item.id === id ? { ...item, status: newStatus, alasanPenolakan: reason } : item
+      ));
+      setShowStatusModal(false);
+      setPendingStatus(null);
+      setRejectionReason("");
+      alert(`Status pengajuan berhasil diubah menjadi: ${newStatus}`);
+    } catch (error: any) {
+      alert(error.message);
+    }
   };
 
   return (

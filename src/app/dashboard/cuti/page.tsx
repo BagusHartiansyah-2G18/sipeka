@@ -1,9 +1,10 @@
 import { ProtectedLayout } from "@/components/layout/ProtectedLayout";
-import { Plus, Calendar, CheckCircle, Clock, XCircle, Edit, Eye, Shield } from "lucide-react";
+import { Plus, Calendar } from "lucide-react";
 import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { CutiList } from "./components/CutiList";
+import { prisma } from "@/lib/prisma";
 
 export default async function CutiPage() {
   const session = await getServerSession(authOptions);
@@ -11,65 +12,42 @@ export default async function CutiPage() {
   const role = user?.role;
 
   // Admin roles that can edit status
-  const isAdmin = role === "KEPALA_BADAN" || role === "SEKRETARIS_BADAN" || role === "ADMIN";
+  const isAdmin = role === "KEPALA_BADAN" || role === "SEKRETARIS_BADAN" || role === "ADMIN" || role === "KABAG_UMUM_KEPEGAWAIAN";
 
-  // Mock data - in real app, fetch from database based on role
-  const allPengajuan = [
-    {
-      id: 1,
-      pegawai: "Budi Setiawan",
-      nip: "199001152015122004",
-      jenisCuti: "Cuti Tahunan",
-      tanggalMulai: "2024-06-01",
-      tanggalSelesai: "2024-06-15",
-      jumlahHari: 15,
-      status: "Menunggu",
-      statusColor: "yellow",
-    },
-    {
-      id: 2,
-      pegawai: "Siti Aminah",
-      nip: "199203102018122005",
-      jenisCuti: "Cuti Sakit",
-      tanggalMulai: "2024-05-20",
-      tanggalSelesai: "2024-05-22",
-      jumlahHari: 3,
-      status: "Disetujui",
-      statusColor: "green",
-    },
-    {
-      id: 3,
-      pegawai: "Ahmad Yani",
-      nip: "198505122010121001",
-      jenisCuti: "Cuti Alasan Penting",
-      tanggalMulai: "2024-05-10",
-      tanggalSelesai: "2024-05-10",
-      jumlahHari: 1,
-      status: "Ditolak",
-      statusColor: "red",
-    },
-  ];
+  // Fetch real data from database
+  let whereClause: any = {};
+  if (!isAdmin) {
+    whereClause.pegawai = { nip: user?.nip };
+  }
 
-  // Filter: If not admin, only show own data (mocking this by showing only one if not admin)
-  const displayData = isAdmin ? allPengajuan : allPengajuan.filter(p => p.nip === user?.nip || p.pegawai === user?.nama);
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "Menunggu": return <Clock size={16} />;
-      case "Disetujui": return <CheckCircle size={16} />;
-      case "Ditolak": return <XCircle size={16} />;
-      default: return null;
+  const rawData = await prisma.cuti.findMany({
+    where: whereClause,
+    include: {
+      pegawai: {
+        select: {
+          nama: true,
+          nip: true,
+        }
+      }
+    },
+    orderBy: {
+      createdAt: "desc"
     }
-  };
+  });
 
-  const getStatusColor = (color: string) => {
-    const colors = {
-      yellow: "bg-yellow-100 text-yellow-700 border-yellow-200",
-      green: "bg-green-100 text-green-700 border-green-200",
-      red: "bg-red-100 text-red-700 border-red-200",
-    };
-    return colors[color as keyof typeof colors] || "";
-  };
+  // Map to format expected by CutiList
+  const displayData = rawData.map(item => ({
+    id: item.id,
+    pegawai: item.pegawai.nama,
+    nip: item.pegawai.nip,
+    jenisCuti: item.jenisCuti.replace(/_/g, " "),
+    tanggalMulai: item.tanggalMulai.toISOString().split("T")[0],
+    tanggalSelesai: item.tanggalSelesai.toISOString().split("T")[0],
+    jumlahHari: item.jumlahHari,
+    status: item.status.replace(/_/g, " "),
+    alasanPenolakan: item.alasanPenolakan,
+    alasan: item.alasan,
+  }));
 
   return (
     <ProtectedLayout>
@@ -106,13 +84,15 @@ export default async function CutiPage() {
               {isAdmin ? "Menunggu Persetujuan" : "Sisa Cuti Tahunan"}
             </p>
             <p className={`text-2xl font-bold mt-1 ${isAdmin ? "text-yellow-600" : "text-blue-600"}`}>
-              {isAdmin ? displayData.filter(p => p.status === "Menunggu").length : "12 hari"}
+              {isAdmin 
+                ? displayData.filter(p => p.status.includes("MENUNGGU") || p.status.includes("Menunggu")).length 
+                : "12 hari"}
             </p>
           </div>
           <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
             <p className="text-gray-500 text-sm font-medium">Disetujui Bulan Ini</p>
             <p className="text-2xl font-bold text-green-600 mt-1">
-              {displayData.filter(p => p.status === "Disetujui").length}
+              {displayData.filter(p => p.status === "DISETUJUI" || p.status === "Disetujui").length}
             </p>
           </div>
         </div>

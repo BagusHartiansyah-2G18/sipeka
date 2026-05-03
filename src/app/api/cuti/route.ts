@@ -116,7 +116,7 @@ export async function POST(req: NextRequest) {
         atasan2Nama,
         atasan2Nip,
         filePendukungUrl: fileUrl,
-        status: "MENUNGGU",
+        status: "MENUNGGU_ATASAN_1",
       },
     });
 
