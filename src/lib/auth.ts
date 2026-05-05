@@ -50,20 +50,20 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.role = (user as any).role;
-        token.nama = (user as any).nama;
-        token.bidang = (user as any).bidang;
-        token.pegawaiId = (user as any).pegawaiId;
+        token.role = user.role;
+        token.nama = user.nama;
+        token.bidang = user.bidang;
+        token.pegawaiId = user.pegawaiId;
       }
       return token;
     },
     async session({ session, token }) {
       if (token) {
         session.user.id = token.sub!;
-        (session.user as any).role = token.role;
-        (session.user as any).nama = token.nama;
-        (session.user as any).bidang = token.bidang;
-        (session.user as any).pegawaiId = token.pegawaiId;
+        session.user.role = token.role;
+        session.user.nama = token.nama;
+        session.user.bidang = token.bidang;
+        session.user.pegawaiId = token.pegawaiId;
       }
       return session;
     },
