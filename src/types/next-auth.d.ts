@@ -9,7 +9,8 @@ declare module "next-auth" {
       id: string;
       role: Role;
       nama: string;
-      bidang: Bidang;
+      nip: string;
+      bidang?: string;
       pegawaiId: string;
     } & DefaultSession["user"];
   }
@@ -17,7 +18,8 @@ declare module "next-auth" {
   interface User {
     role: Role;
     nama: string;
-    bidang: Bidang;
+    nip: string;
+    bidang?: string;
     pegawaiId: string;
   }
 }
@@ -26,7 +28,8 @@ declare module "next-auth/jwt" {
   interface JWT {
     role: Role;
     nama: string;
-    bidang: Bidang;
+    nip: string;
+    bidang?: string;
     pegawaiId: string;
   }
 }

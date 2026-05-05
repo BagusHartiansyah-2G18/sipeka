@@ -23,7 +23,7 @@ export const authOptions: NextAuthOptions = {
         // Find user by NIP through pegawai relationship
         const pegawai = await prisma.pegawai.findUnique({
           where: { nip: credentials.nip },
-          include: { user: true },
+          include: { user: true, bidang: true },
         });
 
         if (!pegawai || !pegawai.user) return null;
@@ -41,7 +41,7 @@ export const authOptions: NextAuthOptions = {
           nip: pegawai.nip,
           role: user.role as Role,
           nama: pegawai.nama,
-          bidang: pegawai.bidang,
+          bidang: pegawai.bidang?.kode,
           pegawaiId: pegawai.id,
         };
       },
@@ -52,6 +52,7 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.role = user.role;
         token.nama = user.nama;
+        token.nip = user.nip;
         token.bidang = user.bidang;
         token.pegawaiId = user.pegawaiId;
       }
@@ -62,6 +63,7 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.sub!;
         session.user.role = token.role;
         session.user.nama = token.nama;
+        session.user.nip = token.nip;
         session.user.bidang = token.bidang;
         session.user.pegawaiId = token.pegawaiId;
       }

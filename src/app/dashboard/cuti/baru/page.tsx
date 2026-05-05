@@ -1,7 +1,8 @@
 "use client";
 
 import { ProtectedLayout } from "@/components/layout/ProtectedLayout";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { 
   ArrowLeft, 
@@ -20,6 +21,7 @@ export default function BaruCutiPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [file, setFile] = useState<File | null>(null);
+  const { data: session } = useSession();
   const [formData, setFormData] = useState({
     jenisCuti: "",
     alasan: "",
@@ -35,6 +37,30 @@ export default function BaruCutiPage() {
     atasan2Nama: "",
     atasan2Nip: "",
   });
+
+  useEffect(() => {
+    const fetchApprovers = async () => {
+      try {
+        const res = await fetch("/api/pegawai/approvers");
+        const data = await res.json();
+        if (data.atasan1 || data.atasan2) {
+          setFormData(prev => ({
+            ...prev,
+            atasan1Nama: data.atasan1.nama || "",
+            atasan1Nip: data.atasan1.nip || "",
+            atasan1Jabatan: data.atasan1.jabatan || "",
+            atasan2Nama: data.atasan2.nama || "",
+            atasan2Nip: data.atasan2.nip || "",
+            atasan2Jabatan: data.atasan2.jabatan || "",
+          }));
+        }
+      } catch (error) {
+        console.error("Failed to fetch approvers:", error);
+      }
+    };
+
+    fetchApprovers();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

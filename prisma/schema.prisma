@@ -16,11 +16,11 @@ enum Role {
   PEGAWAI
 }
 
-enum Bidang {
-  SEKRETARIAT
-  IDEOLOGI_WAWASAN_KARAKTER
-  POLITIK_ORMAS
-  KEWASPADAAN_NASIONAL
+model Bidang {
+  id      String    @id @default(cuid())
+  kode    String    @unique
+  nama    String
+  pegawai Pegawai[]
 }
 
 enum StatusPengajuan {
@@ -81,7 +81,9 @@ model Pegawai {
   alamat          String?
   noTelp          String?
   jabatan         String
-  bidang          Bidang
+  tmtJabatan      DateTime?
+  bidangId        String?
+  bidang          Bidang?   @relation(fields: [bidangId], references: [id])
   pangkat         String?
   golonganRuang   String
   tmtGolongan     DateTime?

@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { role, nip, bidang } = session.user as any;
+  const { role, nip, bidang } = session.user;
   const { searchParams } = new URL(req.url);
   const status = searchParams.get("status");
   const page = parseInt(searchParams.get("page") ?? "1");
@@ -93,7 +93,7 @@ export async function POST(req: NextRequest) {
 
     // Get current pegawai info
     const pegawai = await prisma.pegawai.findUnique({ 
-      where: { nip: (session.user as any).nip } 
+      where: { nip: session.user.nip } 
     });
 
     if (!pegawai) return NextResponse.json({ error: "Pegawai tidak ditemukan" }, { status: 404 });
