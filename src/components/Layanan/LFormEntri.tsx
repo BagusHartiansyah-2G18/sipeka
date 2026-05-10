@@ -19,9 +19,6 @@ export default function LFormEntri({
 
     const router = useRouter();
 
-    const [files, setFiles] = useState<Record<string, File | null>>({});
-    const [uploading, setUploading] = useState<string | null>(null);
-
     const handleUpload = async (
         file: File,
         idDaft: string
