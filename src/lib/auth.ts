@@ -26,7 +26,7 @@ export const authOptions: NextAuthOptions = {
 
         const pegawai = await prisma.pegawai.findUnique({
           where: { nip: credentials.nip },
-          include: { user: true },
+          include: { user: true, bidang: true },
         });
 
         if (!pegawai || !pegawai.user) return null;

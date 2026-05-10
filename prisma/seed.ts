@@ -22,7 +22,13 @@ async function main() {
     skipDuplicates: true,
   });
 
-  const passwordHash = await bcrypt.hash("admin123", 10);
+  // 1. Seed Bidang
+  const bidangData = [
+    { kode: "SEK", nama: "Sekretariat" },
+    { kode: "IDK", nama: "Bidang Ideologi dan Karakter Bangsa" },
+    { kode: "KWN", nama: "Bidang Kewaspadaan dan Ketahanan Nasional" },
+    { kode: "POL", nama: "Bidang Politik Dalam Negeri dan Ormas" },
+  ];
 
   // ======================
   // DINAS

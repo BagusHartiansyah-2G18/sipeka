@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { role, pegawaiId, bidang } = session.user as any;
+  const { role, pegawaiId, bidang } = session.user;
   const { searchParams } = new URL(req.url);
   const search = searchParams.get("search") ?? "";
   const filterBidang = searchParams.get("bidang");
@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
       { jabatan: { contains: search } },
     ];
   }
-  if (filterBidang) whereClause.bidang = filterBidang;
+  if (filterBidang) whereClause.bidang = { kode: filterBidang };
 
   // Batasan akses berdasarkan role
   if (role === "PEGAWAI") {
@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
     whereClause.id = pegawaiId;
   } else if (role === "KEPALA_BIDANG") {
     // Kepala Bidang hanya lihat pegawai di bidangnya
-    whereClause.bidang = bidang;
+    whereClause.bidang = { kode: bidang };
     whereClause.user = {
       role: { notIn: ["KEPALA_BADAN", "SEKRETARIS_BADAN", "KABAG_UMUM_KEPEGAWAIAN"] }
     };
@@ -54,7 +54,7 @@ export async function GET(req: NextRequest) {
         nip: true,
         nama: true,
         jabatan: true,
-        bidang: true,
+        bidang: { select: { kode: true, nama: true } },
         golonganRuang: true,
         statusPegawai: true,
         fotoUrl: true,

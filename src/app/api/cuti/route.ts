@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { role, nip, bidang } = session.user as any;
+  const { role, nip, bidang } = session.user;
   const { searchParams } = new URL(req.url);
   const status = searchParams.get("status");
   const page = parseInt(searchParams.get("page") ?? "1");

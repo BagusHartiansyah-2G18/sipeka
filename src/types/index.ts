@@ -9,11 +9,7 @@ export type Role =
   | "KEPALA_BIDANG"
   | "PEGAWAI";
 
-export type Bidang =
-  | "SEKRETARIAT"
-  | "IDEOLOGI_WAWASAN_KARAKTER"
-  | "POLITIK_ORMAS"
-  | "KEWASPADAAN_NASIONAL";
+export type Bidang = string;
 
 export type StatusPengajuan =
   | "DRAFT"
@@ -39,11 +35,11 @@ export const LABEL_ROLE: Record<Role, string> = {
   PEGAWAI: "Pegawai",
 };
 
-export const LABEL_BIDANG: Record<Bidang, string> = {
-  SEKRETARIAT: "Sekretariat",
-  IDEOLOGI_WAWASAN_KARAKTER: "Bid. Ideologi, Wawasan Kebangsaan & Karakter Bangsa",
-  POLITIK_ORMAS: "Bid. Politik Dalam Negeri dan Ormas",
-  KEWASPADAAN_NASIONAL: "Bid. Kewaspadaan Nasional",
+export const LABEL_BIDANG: Record<string, string> = {
+  SEK: "Sekretariat",
+  IDK: "Bid. Ideologi, Wawasan Kebangsaan & Karakter Bangsa",
+  KWN: "Bid. Kewaspadaan Nasional",
+  POL: "Bid. Politik Dalam Negeri dan Ormas",
 };
 
 export const LABEL_JENIS_CUTI: Record<JenisCuti, string> = {
@@ -78,7 +74,7 @@ export const ROLE_LEVEL: Record<Role, number> = {
  */
 export function getTandaTangan(role: Role, bidang: Bidang): string[] {
   if (role === "PEGAWAI") {
-    if (bidang === "SEKRETARIAT") {
+    if (bidang === "SEK") {
       return ["Sekretaris Badan", "Kepala Badan"];
     }
     // Bidang lainnya

@@ -55,8 +55,8 @@ export function Sidebar() {
   const { data: session } = useSession();
   const router = useRouter();
   
-  const user = session?.user as any;
-  const userRole = user?.role as Role;
+  const user = session?.user;
+  const userRole = user?.role;
 
   const filteredNavItems = navItems.filter(item => 
     !item.roles || item.roles.includes(userRole)
