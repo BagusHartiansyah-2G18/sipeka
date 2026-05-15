@@ -27,10 +27,14 @@ export const authOptions: NextAuthOptions = {
         const pegawai = await prisma.pegawai.findUnique({
           where: { nip: credentials.nip },
           include: { user: true },
-        });
-
+        }); 
+        
         if (!pegawai || !pegawai.user) return null;
-
+        
+        // const passwordHash = await bcrypt.hash("kesbangFol", 10);
+        // console.log(passwordHash);
+        
+        
         const passwordMatch = await bcrypt.compare(
           credentials.password,
           pegawai.user.password

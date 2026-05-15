@@ -31,7 +31,7 @@ export function CutiList({ data: initialData, me }: CutiListProps) {
   const [rejectionReason, setRejectionReason] = useState("");
   const [pendingStatus, setPendingStatus] = useState<string | null>(null);
 
-  const { isAdmin,nip } = me;
+  const { realAdmin:isAdmin,nip } = me;
 
   const getStatusIcon = (status: string) => {
     const s = status.toUpperCase();
@@ -172,8 +172,7 @@ export function CutiList({ data: initialData, me }: CutiListProps) {
                       {
                         me.id == item.pegawaiId && item.status != "DISETUJUI" &&
                         <Link 
-                          href={"/dashboard/cuti/baru"}
-                          target="_blank"
+                          href={"/dashboard/cuti/baru"} 
                           className="flex flex-col items-center group gap-1"
                         >
                           <div className="p-2 text-gray-400 group-hover:text-blue-600 group-hover:bg-blue-50 rounded-lg transition-all">
@@ -200,7 +199,7 @@ export function CutiList({ data: initialData, me }: CutiListProps) {
                           <div className="p-2 text-gray-400 group-hover:text-amber-600 group-hover:bg-amber-50 rounded-lg transition-all">
                             <Shield size={18} />
                           </div>
-                          <span className="text-[10px] font-medium text-gray-400 group-hover:text-amber-600">Statuss</span>
+                          <span className="text-[10px] font-medium text-gray-400 group-hover:text-amber-600">Status</span>
                         </button>
                       )}
 

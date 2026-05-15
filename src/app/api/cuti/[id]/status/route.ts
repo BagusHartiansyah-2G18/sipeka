@@ -31,14 +31,12 @@ export async function PATCH(
 
     // 3. Buat notifikasi jika user ditemukan
     if (userTarget) {
-      await prisma.notification.create({
-        data: {
-          userId: userTarget.id,
-          title: "Update Status Cuti",
-          message: `Status pengajuan cuti Anda telah diperbarui menjadi ${status.replace(/_/g, " ")}.`,
-          link: "/dashboard/cuti",
-        }
-      });
+      // await prisma.notification.create({
+      //   data: { 
+      //     title: "Update Status Cuti",
+      //     message: `Status pengajuan cuti Anda telah diperbarui menjadi ${status.replace(/_/g, " ")}.`,
+      //   }
+      // });
     }
 
     return NextResponse.json(cuti);

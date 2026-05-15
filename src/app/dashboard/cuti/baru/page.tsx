@@ -37,7 +37,8 @@ export default async function BaruCutiPage() {
   const dtUser = all.filter(p => p.id === pegawaiId);
   const dtLuar = all.filter(p => p.nip.length === 1);
 
-
+  console.log(dtBidang);
+  
   const { pimpinan,dinas, jabatan}= dtBidang[0];
   
   const data={

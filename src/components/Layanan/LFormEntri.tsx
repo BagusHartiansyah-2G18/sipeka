@@ -99,7 +99,7 @@ export default function LFormEntri({
                 {ddokument.map((item: any) => {
 
                 const existing = item.listDokumen?.[0];
-
+                    
                 return (
                     <div
                     key={item.idDaft}
@@ -166,7 +166,7 @@ export default function LFormEntri({
                         </div>
 
                         {
-                            !sf.detail  &&
+                            !sf.detail && existing.status!="DISETUJUI"  &&
                             <label className="cursor-pointer text-sm text-blue-600 hover:underline">
                                 Ganti File
                                 <input

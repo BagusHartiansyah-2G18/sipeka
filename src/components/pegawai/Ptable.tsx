@@ -6,12 +6,11 @@ import { useRouter } from "next/navigation";
 import { Plus, TrendingUp, CheckCircle, Clock, Upload, Eye, Shield, Check, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import {formatDateShort, getRemainingDays } from "@/lib/sfBGS"
-export default function Fcuti({
-  dtabel,ddokument,
+export default function Ptable({
+  dtabel,
   sf,
 }: {
-  dtabel: any[],
-  ddokument:any[],
+  dtabel: any[], 
   sf:any
 }) {
     
@@ -62,7 +61,7 @@ export default function Fcuti({
   return (
       <>
         {/* Info Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-white rounded-lg border border-gray-200 p-4">
             <p className="text-gray-600 text-sm">Total {sf.nmKate}</p>
             <p className="text-2xl font-bold text-gray-900 mt-1">2</p>
@@ -75,7 +74,7 @@ export default function Fcuti({
             <p className="text-gray-600 text-sm">Golongan Berikutnya</p>
             <p className="text-2xl font-bold text-blue-600 mt-1">IV/a</p>
           </div>
-        </div>
+        </div> */}
 
         {/* Table */}
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
@@ -87,32 +86,18 @@ export default function Fcuti({
                     Nama
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Tanggal Ajuan
+                    Jabatan
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Dokumen
+                    KGB 
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    sisa waktu
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Aksi
+                    KP
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {dtabel.map((item) => {
-                  const listStatus =  item.listDokumen.filter(v=>v.status!="DIPROSES");
-                  let masaPengajuan = {};
-                  if(ddokument[0].idKate == "KGB"){
-                    masaPengajuan = getRemainingDays(item.pimpinan?.tglMasaKerja,2)
-                  }else{
-                    masaPengajuan = getRemainingDays(item.pimpinan?.tmtGolongan,4)
-                  }
-                  
                   return (
                     <tr
                       key={item.id}
@@ -120,89 +105,19 @@ export default function Fcuti({
                     >
                       <td className="px-6 py-4 text-sm font-medium text-gray-900">
                         <div className="flex flex-col">
-                          <span className="text-sm font-semibold text-gray-900">{item.pimpinan.nama}</span>
-                          <span className="text-xs text-gray-500">{item.pimpinan.nip}</span>
+                          <span className="text-sm font-semibold text-gray-900">{item.nama}</span>
+                          <span className="text-xs text-gray-500">{item.nip}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600">
-                        {formatDateShort(item.createdAt)} 
+                        {item.jabatan}
                       </td>
                       <td className="px-6 py-4">
-                        {(item.dokumen?.length || 0) === (ddokument?.length || 0) ? (
-
-                          <span className="inline-flex items-center gap-1 text-green-700 bg-green-100 px-2 py-1 rounded text-xs font-semibold">
-                            <CheckCircle size={14} />
-                            Lengkap
-                          </span>
-
-                        ) : (
-
-                          <span className="inline-flex items-center gap-1 text-yellow-700 bg-yellow-100 px-2 py-1 rounded text-xs font-semibold">
-                            <Upload size={14} />
-
-                            {(item.listDokumen?.length || 0) === 0
-                              ? "Belum Upload"
-                              : `Baru ${(item.listDokumen?.length || 0)} dari ${(ddokument?.length || 0)}`
-                            }
-
-                          </span>
-
-                        )}
-
+                        {(item.kgb <0 ? " Terlambat ":item.kgb+" hari")}
                       </td>
                       <td className="px-6 py-4">
-                        <span
-                          className={`text-yellow-700 bg-yellow-100 inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadge(item.status)}`}
-                        >
-                          { listStatus.length>0 ? (
-                            <>
-                              <CheckCircle size={14} />
-                              {
-                                (listStatus?.filter(v => v.status === "DISETUJUI").length || 0) === (ddokument?.length || 0)
-                                  ? "DISETUJUI"
-                                  : (
-                                      listStatus?.find(v => v.status !== "DISETUJUI")?.status
-                                      || `DIPROSES  `
-                                    )
-                              }
-                            </>
-                          ) : (
-                            <>
-                              <Clock size={14} /> 
-                              DIPROSES
-                            </>
-                          )}
-                          
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">
-                        {masaPengajuan.remainingDays} hari
-                      </td>
-                      <td className="px-6 py-4 text-sm">
-                        <div className="flex items-center justify-end gap-4">
-                            <Link 
-                              href={"/dashboard/layanan/"+sf.idKate+"/"+item.idLaya}
-                              className="flex flex-col items-center group gap-1"
-                            >
-                              <div className="p-2 text-gray-400 group-hover:text-blue-600 group-hover:bg-blue-50 rounded-lg transition-all">
-                                <Eye size={18} />
-                              </div>
-                              <span className="text-[10px] font-medium text-gray-400 group-hover:text-blue-600">Detail</span>
-                            </Link>
-                            {(listStatus?.filter(v => v.status === "DISETUJUI").length || 0) === (ddokument?.length || 0) && item.aktif &&
-                              <button 
-                                onClick={() => { _selectedItem({modal:true,item})}}
-                                className="flex flex-col items-center group gap-1"
-                              >
-                                <div className="p-2 text-gray-400 group-hover:text-amber-600 group-hover:bg-amber-50 rounded-lg transition-all">
-                                  <Shield size={18} />
-                                </div>
-                                <span className="text-[10px] font-medium text-gray-400 group-hover:text-amber-600">Statuss</span>
-                              </button>
-                            }
-                            
-                        </div>
-                      </td>
+                         {(item.kp <0 ? " Terlambat ":item.kp+" hari")}
+                      </td> 
                     </tr>
                   )
                 })}

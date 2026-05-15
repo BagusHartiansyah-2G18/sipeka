@@ -4,7 +4,8 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { writeFile, mkdir  } from "fs/promises";
 import { join } from "path";
-
+import { StatusPengajuan } from "@prisma/client";
+import { _notif } from "@/lib/sfBGS"
 
 // GET — ambil semua cuti (sesuai level akses)
 export async function GET(req: NextRequest) {
@@ -83,11 +84,8 @@ export async function POST(req: NextRequest) {
     const atasan2Nama = formData.get("atasan2Nama") as string;
     const atasan2Nip = formData.get("atasan2Nip") as string;
 
-    const pegawai = await prisma.pegawai.findUnique({
-      where: {
-        id:pegawaiId,
-      },
-    }); 
+    const all =await prisma.pegawai.findMany();
+    const pegawai = all.filter(v=>v.id == pegawaiId)[0]; 
     // console.log(pegawai,session.user);
     
     if (!pegawai) {
@@ -175,7 +173,7 @@ export async function POST(req: NextRequest) {
         atasan2Nama,
         atasan2Nip,
       }),
-      status: "MENUNGGU_ATASAN_1",
+      status: StatusPengajuan.MENUNGGU_ATASAN_1,
     };
 
     let cuti;
@@ -193,11 +191,25 @@ export async function POST(req: NextRequest) {
       });
     }
     
+    const ats1 = all.filter(v=>v.nip == atasan1Nip)[0]; 
+    // const ats2 = all.filter(v=>v.nip == atasan2Nip)[0]; 
+    if(ats1){
+      _notif({
+        title:"Pengajuan Cuti, a.n "+pegawai.nama,
+        message:`Yth. ${ats1.nama} selaku ${ats1.jabatan}, kami mohon persetujuaannya, informasi lengkapnya ada di Aplikasi SIPEKA `,
+        pegawaiId:ats1.id,
+        cutiId:cuti?.id || "-",
+        sumber:"CUTI",
+        info:"MENUNGGU_ATASAN_1",
+        idLaya:null
+      })
+    }
+    // if(ats2){
+    //   // _notif()
+    // }
 
     return NextResponse.json(cuti, { status: 201 });
   } catch (error: any) {
-    console.error("Upload error:", error);
-
     return NextResponse.json(
       { error: error.message || "Internal Server Error" },
       { status: 500 }
@@ -220,10 +232,15 @@ export async function PUT(req: NextRequest) {
     const id = formData.get("id") as string;
     const atasanStatus = formData.get("atasanStatus") as string;
     
+    const admin = await prisma.user.findFirst({
+      where:{
+        role:"ADMIN"
+      }
+    })
+
+    const all =await prisma.pegawai.findMany();
+    const me = all.filter(v=>v.id == meId)[0]; 
     
-    const me = await prisma.pegawai.findUnique({
-      where: { id: meId }
-    });
 
     const dcuti = await prisma.cuti.findFirst({
       where: {
@@ -261,7 +278,7 @@ export async function PUT(req: NextRequest) {
       break;
     }
     const cuti = await prisma.cuti.update({
-      data: payload,
+      data: payload, //
       where:{
         id,
         status: {
@@ -270,6 +287,102 @@ export async function PUT(req: NextRequest) {
       }
     });
 
+    const ats1 = all.filter(v=>v.nip == atasan1Nip)[0]; 
+    const ats2 = all.filter(v=>v.nip == atasan2Nip)[0]; 
+    const real = all.filter(v=>v.id == dcuti?.pegawaiId)[0]; 
+    const adminR = all.filter(v=>v.id == admin?.pegawaiId)[0]; 
+
+    // console.log(cuti);
+    
+    switch (cuti?.status) {
+      case "DITOLAK_ATASAN_1":
+        if(real){
+          _notif({
+            title:"PENOLAKAN Pengajuan Cuti, Oleh "+ats1.nama,
+            message:alasanPenolakan+`, informasi lengkapnya ada di Aplikasi SIPEKA `,
+            pegawaiId:real.id,
+            cutiId:cuti?.id || "-",
+            sumber:"CUTI",
+            info:"DITOLAK_ATASAN_1",
+            idLaya:null
+          });
+        }
+      break;
+      case "MENUNGGU_ATASAN_2":
+        if(real){
+          _notif({
+            title:"Pengajuan Cuti DISETUJUI, Oleh "+ats1.nama,
+            message:`Selamat, informasi lengkapnya ada di Aplikasi SIPEKA `,
+            pegawaiId:real.id,
+            cutiId:cuti?.id || "-",
+            sumber:"CUTI",
+            info:"MENUNGGU_ATASAN_2",
+            idLaya:null
+          });
+        }
+        if(ats2){
+          _notif({
+            title:"Pengajuan Cuti, a.n "+real.nama,
+            message:`Yth. ${ats2.nama} selaku ${ats2.jabatan}, kami mohon persetujuaannya, informasi lengkapnya ada di Aplikasi SIPEKA `,
+            pegawaiId:ats2.id,
+            cutiId:cuti?.id || "-",
+            sumber:"CUTI",
+            info:"MENUNGGU_ATASAN_2 -" // - pembeda antara atasan 1 dan 2
+            ,idLaya:null
+          })
+        }
+      break;
+      case "DITOLAK_ATASAN_2":
+        if(real){
+          _notif({
+            title:"PENOLAKAN Pengajuan Cuti, Oleh "+ats2.nama,
+            message:alasanPenolakan+`, informasi lengkapnya ada di Aplikasi SIPEKA `,
+            pegawaiId:real.id,
+            cutiId:cuti?.id || "-",
+            sumber:"CUTI",
+            info:"DITOLAK_ATASAN_2",
+            idLaya:null
+          });
+        }
+      break;
+      case "MENUNGGU_ADMIN":
+        if(real){
+          _notif({
+            title:"Pengajuan Cuti DISETUJUI, Oleh "+ats2.nama,
+            message:`Selamat, informasi lengkapnya ada di Aplikasi SIPEKA `,
+            pegawaiId:real.id,
+            cutiId:cuti?.id || "-",
+            sumber:"CUTI",
+            info:"MENUNGGU_ADMIN",
+            idLaya:null
+          });
+        }
+        if(adminR){
+          _notif({
+            title:"Pengajuan Cuti, a.n "+real.nama,
+            message:`telah disetujui atasan, mohon untuk menyelsaikan pengajuan ini, informasi lengkapnya ada di Aplikasi SIPEKA `,
+            pegawaiId:adminR.id,
+            cutiId:cuti?.id || "-",
+            sumber:"CUTI",
+            info:"MENUNGGU_ADMIN -" // - pembeda antara atasan 1 dan 2
+            ,idLaya:null
+          })
+        }
+      break;
+      case "DISETUJUI":
+        if(real){
+          _notif({
+            title:"Pengajuan Cuti DISETUJUI, Oleh ADMIN",
+            message:`Selamat, informasi lengkapnya ada di Aplikasi SIPEKA `,
+            pegawaiId:real.id,
+            cutiId:cuti?.id || "-",
+            sumber:"CUTI",
+            info:"DISETUJUI",
+            idLaya:null
+          });
+        }
+      break
+    } 
     return NextResponse.json(cuti, { status: 201 });
   } catch (error: any) {
     console.error("Upload error:", error);

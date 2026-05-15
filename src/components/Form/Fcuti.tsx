@@ -363,9 +363,9 @@ export default function Fcuti({
                     value={formData.durasiJenis}
                     onChange={handleChange}
                   >
-                    <option value="HARI">Hari</option>
-                    <option value="BULAN">Bulan</option>
-                    <option value="TAHUN">Tahun</option>
+                    <option selected value="HARI">Hari</option>
+                    {/* <option value="BULAN">Bulan</option>
+                    <option value="TAHUN">Tahun</option> */}
                   </select>
                 </div>
               </div>

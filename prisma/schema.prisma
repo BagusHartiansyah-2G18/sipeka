@@ -53,7 +53,6 @@ model User {
   pegawaiId String?  @unique
   pegawai   Pegawai? @relation(fields: [pegawaiId], references: [id])
 
-  notifications Notification[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -105,23 +104,37 @@ model Pegawai {
   dinasDipimpin  Dinas[]  @relation("PimpinanDinas")
   bidangDipimpin Bidang[] @relation("PimpinanBidang")
   layananPegawai Layanan[] @relation("PegawaiLayanan")
-
+  notifications Notification[] 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+enum fitur {
+  CUTI
+  KGB
+  KP
 }
 
 model Notification {
   id String @id @default(cuid())
 
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
+  sumber fitur @default(CUTI)
 
-  title   String
+  pegawaiId String
+  pegawai Pegawai @relation(fields: [pegawaiId], references: [id])
+
+  cutiId String?
+  cuti Cuti? @relation(fields: [cutiId], references: [id])
+
+  idLaya String?
+  layanan Layanan? @relation(fields: [idLaya], references: [idLaya])
+
+  title String
   message String
 
-  isRead Boolean @default(false)
+  send Boolean @default(false)
 
-  link String?
+  info String?
 
   createdAt DateTime @default(now())
 }
@@ -149,6 +162,8 @@ model Cuti {
   status StatusPengajuan @default(DRAFT)
   tt       String  @db.Text
   nomorSurat String?
+
+  notifications Notification[]
 
   alasanPenolakan String? @db.Text
   catatanAdmin    String? @db.Text
@@ -231,6 +246,7 @@ model Layanan {
   kategori KategoriDokumen @relation(fields: [idKate], references: [idKate], onDelete: Cascade)
 
   listDokumen ListDokumen[]
+  notifications Notification[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
