@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "startp": "next start -p 3002",
+    "starM": "NODE_OPTIONS='--max-old-space-size=512' next start -p 3001",
     "lint": "next lint",
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
