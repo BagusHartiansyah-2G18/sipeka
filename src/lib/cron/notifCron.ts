@@ -21,7 +21,7 @@ async function send({ message, target }: Isend): Promise<boolean> {
     const resp =  await fetch("https://api.fonnte.com/send", {
       method: "POST",
       headers: {
-        Authorization: process.env.FONNTE_TOKEN || "oJBYQiq4PC6FQFWypQhs",
+        Authorization: process.env.FONNTE_TOKEN || "rGkDFJZnxeprGTKcV78S",
       },
       body: formData,
     });
