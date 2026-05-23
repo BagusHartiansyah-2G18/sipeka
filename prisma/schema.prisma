@@ -109,11 +109,52 @@ model Pegawai {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+model Pegawaii {
+  id String @id @default(cuid())
 
+  nip  String @unique
+  nama String
+
+  tempatLahir  String?
+  tanggalLahir DateTime?
+
+  jenisKelamin String?
+
+  agama  String?
+  alamat String?
+  noTelp String?
+
+  jabatan       String
+  pangkat       String?
+  golonganRuang String
+
+  tmtGolongan DateTime?
+
+  unitKerja String?
+
+  masaKerja    String?
+  tglMasaKerja DateTime?
+
+  gajiPokok Int?
+
+  tmtPangkat DateTime?
+
+  pendidikanAkhir String?
+
+  statusPegawai String @default("AKTIF")
+
+  fotoUrl String?
+
+  bidangId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
 enum fitur {
   CUTI
   KGB
   KP
+  BRIDA
 }
 
 model Notification {

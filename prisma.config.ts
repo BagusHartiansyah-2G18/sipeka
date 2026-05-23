@@ -22,5 +22,7 @@ export default defineConfig({
   engine: "classic",
   datasource: {
     url: "mysql://bpkadksb_2g18:}}s%n65M0vGvSwvZ@localhost/bpkadksb_sipeka"!,
+    // url: "mysql://root:@localhost:3306/simpeg_kesbangpol"!,
+    
   },
 });
